@@ -2,29 +2,29 @@ package Model
 
 import "database/sql"
 
-type zone struct {
+type Zone struct {
 	 Name     string `json:"name"`
-	 zone_id  int    `json:"zone_id"`
+	 Zone_id  int    `json:"Zone_id"`
 	 Location string `json:"location"`
 }
-func (z *zone) getZone(db *sql.DB) error {
-	return db.QueryRow("SELECT name, locatio FROM zones WHERE zone_id=$1",
-		z.zone_id).Scan(&z.Name,&z.Location)
+func (z *Zone) GetZone(db *sql.DB) error {
+	return db.QueryRow("SELECT name, locatio FROM zones WHERE Zone_id=$1",
+		z.Zone_id).Scan(&z.Name,&z.Location)
 }
 
-func (z *zone)getZones(db *sql.DB) ([]zone, error) {
-	rows, err := db.Query("SELECT zone_id, name,  location  FROM zones")
+func (z *Zone) GetZones(db *sql.DB) ([]Zone, error) {
+	rows, err := db.Query("SELECT Zone_id, name,  location  FROM zones")
 	if err != nil {
 		return nil, err
 	}
 
 	defer rows.Close()
 
-	var zones []zone
+	var zones []Zone
 
 	for rows.Next() {
-		var z zone
-		if err := rows.Scan(&z.zone_id, &z.Name, &z.Location); err != nil {
+		var z Zone
+		if err := rows.Scan(&z.Zone_id, &z.Name, &z.Location); err != nil {
 			return nil, err
 		}
 		zones = append(zones, z)
@@ -33,25 +33,25 @@ func (z *zone)getZones(db *sql.DB) ([]zone, error) {
 	return zones, nil
 }
 
-func (z *zone) updateZone(db *sql.DB) error {
+func (z *Zone) UpdateZone(db *sql.DB) error {
 	_, err :=
-		db.Exec("UPDATE zones SET name=$1, location=$2 WHERE zone_id =$3",
-			z.Name, z.Location, z.zone_id)
+		db.Exec("UPDATE zones SET name=$1, location=$2 WHERE Zone_id =$3",
+			z.Name, z.Location, z.Zone_id)
 
 	return err
 }
 
-func (z *zone) deleteZone(db *sql.DB) error {
+func (z *Zone) DeleteZone(db *sql.DB) error {
 
-	_, err := db.Exec("DELETE FROM zones WHERE zone_id=$1", z.zone_id)
+	_, err := db.Exec("DELETE FROM zones WHERE Zone_id=$1", z.Zone_id)
 
 	return err
 }
 
-func (z *zone) createZone(db *sql.DB) error {
+func (z *Zone) CreateZone(db *sql.DB) error {
 	err := db.QueryRow(
 		"INSERT INTO zones(name, location) VALUES($1, $2 ,$3,$4) RETURNING id",
-		z.Name, z.Location).Scan(&z.zone_id)
+		z.Name, z.Location).Scan(&z.Zone_id)
 
 	if err != nil {
 		return err

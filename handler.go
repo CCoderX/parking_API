@@ -3,12 +3,12 @@ package parking_API
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/CCoderX/parking_API/Model"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
-	"github.com/CCoderX/parking_API/Model"
 )
-
+//
 func respondWithError(w http.ResponseWriter, code int, message string) {
 	respondWithJSON(w, code, map[string]string{"error": message})
 }
@@ -29,8 +29,8 @@ func (a *App)getZone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := zone{"",id,"",}
-	if err := p.getZone(a.DB); err != nil {
+	p := Model.Zone{"",id,"",}
+	if err := p.GetZone(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			respondWithError(w, http.StatusNotFound, "Zone not found")
@@ -45,8 +45,8 @@ func (a *App)getZone(w http.ResponseWriter, r *http.Request) {
 
 func (a *App)getZones(w http.ResponseWriter, r *http.Request) {
 
-	tmp := zone{"",0,"",}
-	zones, err := tmp.getZones(a.DB)
+	tmp := Model.Zone{}
+	zones, err := tmp.GetZones(a.DB)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -56,7 +56,7 @@ func (a *App)getZones(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App)createZone(w http.ResponseWriter, r *http.Request) {
-	var z zone
+	var z Model.Zone
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&z); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -64,7 +64,7 @@ func (a *App)createZone(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if err := z.createZone(a.DB); err != nil {
+	if err := z.CreateZone(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -80,16 +80,16 @@ func (a *App)updateZone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var z zone
+	var z Model.Zone
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&z); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid resquest payload")
 		return
 	}
 	defer r.Body.Close()
-	z.zone_id = id
+	z.Zone_id = id
 
-	if err := z.updateZone(a.DB); err != nil {
+	if err := z.UpdateZone(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -104,9 +104,9 @@ func (a *App)deleteZone(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid Zone ID")
 		return
 	}
-	var z zone
-	z.zone_id = id
-	if err := z.deleteZone(a.DB); err != nil {
+	var z Model.Zone
+	z.Zone_id = id
+	if err := z.DeleteZone(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -121,8 +121,8 @@ func (a *App)getBlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b := block{id,0,"",0,0}
-	if err := b.getBlock(a.DB); err != nil {
+	b := Model.Block{id,0,"",0,0}
+	if err := b.GetBlock(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			respondWithError(w, http.StatusNotFound, "Block not found")
@@ -136,8 +136,8 @@ func (a *App)getBlock(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App)getBlocks(w http.ResponseWriter, r *http.Request) {
-	var b block
-	blocks, err := b.getBlocks(a.DB)
+	var b Model.Block
+	blocks, err := b.GetBlocks(a.DB)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -147,7 +147,7 @@ func (a *App)getBlocks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App)createBlock(w http.ResponseWriter, r *http.Request) {
-	var b block
+	var b Model.Block
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&b); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -155,7 +155,7 @@ func (a *App)createBlock(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if err := b.createBlock(a.DB); err != nil {
+	if err := b.CreateBlock(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -170,7 +170,7 @@ func (a *App)updateBlock(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid Block ID")
 		return
 	}
-	var b block
+	var b Model.Block
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&b); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -179,7 +179,7 @@ func (a *App)updateBlock(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	b.BlockId = id
 
-	if err := b.updateBlock(a.DB); err != nil {
+	if err := b.UpdateBlock(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -195,8 +195,9 @@ func (a *App)deleteBlock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b := block{ id ,0,"",0,0}
-	if err := b.deleteBlock(a.DB); err != nil {
+	var b Model.Block
+	b.BlockId = id
+	if err := b.DeleteBlock(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -206,7 +207,7 @@ func (a *App)deleteBlock(w http.ResponseWriter, r *http.Request) {
 
 /////////////
 func (a *App)createCar(w http.ResponseWriter, r *http.Request) {
-	var c car
+	var c Model.Car
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&c); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -214,7 +215,7 @@ func (a *App)createCar(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if err := c.createCar(a.DB); err != nil {
+	if err := c.CreateCar(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -230,8 +231,8 @@ func (a *App)getCar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := car{ id , id,"",""}
-	if err := c.getCar(a.DB); err != nil {
+	c := Model.Car{ id , id,"",""}
+	if err := c.GetCar(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			respondWithError(w, http.StatusNotFound, "Car not found")
@@ -245,8 +246,8 @@ func (a *App)getCar(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App)getCars(w http.ResponseWriter, r *http.Request) {
-	var c car
-	cars, err := c.getCars(a.DB)
+	var c Model.Car
+	cars, err := c.GetCars(a.DB)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -256,7 +257,7 @@ func (a *App)getCars(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App)parkCar(w http.ResponseWriter, r *http.Request) {
-	var c car
+	var c Model.Car
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&c); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -264,7 +265,7 @@ func (a *App)parkCar(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if err := c.createCar(a.DB); err != nil {
+	if err := c.CreateCar(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -280,7 +281,7 @@ func (a *App)updateCar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var c car
+	var c Model.Car
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&c); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -289,7 +290,7 @@ func (a *App)updateCar(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	c.CarId = id
 
-	if err := c.updateCar(a.DB); err != nil {
+	if err := c.UpdateCar(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -305,8 +306,8 @@ func (a *App)deleteCar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := car{0,id,"",""}
-	if err := c.deleteCar(a.DB); err != nil {
+	c := Model.Car{0,id,"",""}
+	if err := c.DeleteCar(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
