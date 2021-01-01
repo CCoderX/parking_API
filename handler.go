@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+	"github.com/CCoderX/parking_API/Model"
 )
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
@@ -204,6 +205,23 @@ func (a *App)deleteBlock(w http.ResponseWriter, r *http.Request) {
 }
 
 /////////////
+func (a *App)createCar(w http.ResponseWriter, r *http.Request) {
+	var c car
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&c); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	defer r.Body.Close()
+
+	if err := c.createCar(a.DB); err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, c)
+}
+
 func (a *App)getCar(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])

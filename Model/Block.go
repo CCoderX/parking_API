@@ -1,4 +1,4 @@
-package parking_API
+package Model
 
 import "database/sql"
 
